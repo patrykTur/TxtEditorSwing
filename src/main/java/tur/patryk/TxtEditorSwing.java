@@ -20,14 +20,35 @@ public class TxtEditorSwing {
     private JTextArea filesListTextArea;
     private JPanel menuPanel;
     private JPanel labelPanel;
-    private JButton openFolderButton;
-    private JButton exitButton;
+
+    private JMenu menu;
+    private JMenuItem menuChooseFolder;
+    private JMenuItem menuExit;
+
     private static Collection files;
+    private static JMenuBar menuBar = new JMenuBar();
 
     public TxtEditorSwing() {
-        openFolderButton.addActionListener(new ActionListener() {
+
+        menu = new JMenu("File");
+        menuChooseFolder = new JMenuItem("Choose folder");
+        menuExit = new JMenuItem("Exit");
+        menu.add(menuChooseFolder);
+        menu.add(menuExit);
+        menuBar.add(menu);
+
+        menuExit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
+        menuChooseFolder.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                filesListTextArea.setText("");
+
                 JFileChooser fileChooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
 
                 // set the selection mode to directories only
@@ -48,7 +69,7 @@ public class TxtEditorSwing {
 
                         for (Iterator iterator = files.iterator(); iterator.hasNext(); ) {
                             File file = (File) iterator.next();
-                            filesListTextArea.append(file.getAbsolutePath() + "\n");                   //lists all .txt files from specified folder
+                            filesListTextArea.append(file.getAbsolutePath() + "\n");              //lists all .txt files from specified folder
                         }
                         removeTextFromFilesButton.setEnabled(true);
                         cancelButton.setEnabled(true);
@@ -58,12 +79,7 @@ public class TxtEditorSwing {
                 }
             }
         });
-        exitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                System.exit(0);
-            }
-        });
+
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -72,21 +88,28 @@ public class TxtEditorSwing {
                 removeTextFromFilesButton.setEnabled(false);
             }
         });
+
         removeTextFromFilesButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    for (Iterator iterator = files.iterator(); iterator.hasNext(); ) {
-                        File file = (File) iterator.next();
-                        FileUtils.writeStringToFile(file, "", false);
+                    if (filesListTextArea.getText().length() != 0) {
+                        for (Iterator iterator = files.iterator(); iterator.hasNext(); ) {
+                            File file = (File) iterator.next();
+                            FileUtils.writeStringToFile(file, "", false);
+                        }
+                        JOptionPane.showMessageDialog(null, "Success");
+                        filesListTextArea.setText("");
+                        cancelButton.setEnabled(false);
+                        removeTextFromFilesButton.setEnabled(false);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "No files");
+                        removeTextFromFilesButton.setEnabled(false);
+                        cancelButton.setEnabled(false);
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-                JOptionPane.showMessageDialog(null, "Success");
-                filesListTextArea.setText("");
-                cancelButton.setEnabled(false);
-                removeTextFromFilesButton.setEnabled(false);
             }
         });
     }
@@ -99,14 +122,7 @@ public class TxtEditorSwing {
         frame.pack();
         frame.setVisible(true);
 
-//        JMenuBar menuBar = new JMenuBar();
-//        JMenu menu = new JMenu("File");
-//        JMenuItem menuChooseFolder = new JMenuItem("Choose folder");
-//        JMenuItem menuExit = new JMenuItem("Exit");
-//        menu.add(menuChooseFolder);
-//        menu.add(menuExit);
-//        menuBar.add(menu);
-//        frame.setJMenuBar(menuBar);
-//        frame.setVisible(true);
+        frame.setJMenuBar(menuBar);
+        frame.setVisible(true);
     }
 }
